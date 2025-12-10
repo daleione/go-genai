@@ -1344,6 +1344,14 @@ type HTTPOptions struct {
 	// It is executed after ExtraBody has been merged, offering more advanced
 	// control over the request body than the static ExtraBody.
 	ExtrasRequestProvider ExtrasRequestProvider `json:"-"`
+	// Optional. CustomPath directly specifies the full API path to use.
+	// When set, this completely bypasses the default path construction logic.
+	// The path should NOT include the BaseURL or APIVersion, as those will be
+	// prepended automatically. The path should start without a leading slash.
+	//
+	// If CustomPath is set, model parameters are ignored.
+	// This is the simplest way to use completely custom API endpoints.
+	CustomPath string `json:"customPath,omitempty"`
 }
 
 // ExtrasRequestProvider provides a way to dynamically modify the request body

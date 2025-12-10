@@ -1303,9 +1303,21 @@ func generateContentParametersToMldev(ac *apiClient, fromObject map[string]any, 
 
 	fromModel := getValueByPath(fromObject, []string{"model"})
 	if fromModel != nil {
-		fromModel, err = tModel(ac, fromModel)
-		if err != nil {
-			return nil, err
+		// Check if CustomPath is provided, skip model transformation if so
+		customPath := ""
+		if httpOptions := getValueByPath(fromObject, []string{"config", "httpOptions"}); httpOptions != nil {
+			if opts, ok := httpOptions.(map[string]any); ok {
+				if cp, ok := opts["customPath"].(string); ok {
+					customPath = cp
+				}
+			}
+		}
+
+		if customPath == "" {
+			fromModel, err = tModel(ac, fromModel)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		setValueByPath(toObject, []string{"_url", "model"}, fromModel)
@@ -1344,9 +1356,21 @@ func generateContentParametersToVertex(ac *apiClient, fromObject map[string]any,
 
 	fromModel := getValueByPath(fromObject, []string{"model"})
 	if fromModel != nil {
-		fromModel, err = tModel(ac, fromModel)
-		if err != nil {
-			return nil, err
+		// Check if CustomPath is provided, skip model transformation if so
+		customPath := ""
+		if httpOptions := getValueByPath(fromObject, []string{"config", "httpOptions"}); httpOptions != nil {
+			if opts, ok := httpOptions.(map[string]any); ok {
+				if cp, ok := opts["customPath"].(string); ok {
+					customPath = cp
+				}
+			}
+		}
+
+		if customPath == "" {
+			fromModel, err = tModel(ac, fromModel)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		setValueByPath(toObject, []string{"_url", "model"}, fromModel)
@@ -4093,8 +4117,10 @@ func (m Models) generateContent(ctx context.Context, model string, contents []*C
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
-		path, err = formatMap("{model}:generateContent", urlParams)
+
+	// Use direct custom path if provided
+	if httpOptions.CustomPath != "" {
+		path = httpOptions.CustomPath
 	} else {
 		path, err = formatMap("{model}:generateContent", urlParams)
 	}
@@ -4163,8 +4189,10 @@ func (m Models) generateContentStream(ctx context.Context, model string, content
 		urlParams = body["_url"].(map[string]any)
 		delete(body, "_url")
 	}
-	if m.apiClient.clientConfig.Backend == BackendVertexAI {
-		path, err = formatMap("{model}:streamGenerateContent?alt=sse", urlParams)
+
+	// Use direct custom path if provided
+	if httpOptions.CustomPath != "" {
+		path = httpOptions.CustomPath
 	} else {
 		path, err = formatMap("{model}:streamGenerateContent?alt=sse", urlParams)
 	}
